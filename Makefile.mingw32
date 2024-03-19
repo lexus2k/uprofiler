@@ -1,0 +1,24 @@
+CC=x86_64-w64-mingw32-gcc
+CXX=x86_64-w64-mingw32-gcc
+
+CONFIG_FOR_WINDOWS_BUILD = y
+
+# ************* Common defines ********************
+CPPFLAGS += -fPIC -pthread -fexceptions -mwindows -m64 -mwin32 -D_WIN32
+CFLAGS += -D_WIN32
+LDFLAGS += -L. -lm -shared -Wl,--subsystem,windows -mwindows
+#TARGET_LIB ?= uprofiler.lib
+
+include Makefile.common
+# include Makefile.cpputest
+
+.PHONY: clean release debug
+
+# Default build
+all: release
+
+release: library
+
+debug: library
+
+

@@ -1,0 +1,24 @@
+{
+  "name": "uProfiler",
+  "version": "1.0.0",
+  "description": "uProfiler for small projects",
+  "keywords": "profiler arduino microcontroller",
+  "authors":
+  {
+    "name":  "Alexey Dynda",
+    "url":   "https://github.com/lexus2k",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/lexus2k/uprofiler"
+  },
+  "homepage": "https://github.com/lexus2k/uprofiler",
+  "export": {
+    "exclude": [ "docs/*", "unittest/*", "tools/*" ]
+  },
+  "frameworks": [ "arduino" ],
+  "platforms": "*",
+  "examples": "examples/*/*.ino"
+}

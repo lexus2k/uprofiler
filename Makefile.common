@@ -1,0 +1,58 @@
+default: all
+DESTDIR ?= .
+BLD ?= build
+
+VERSION=0.1.0
+
+CPPFLAGS += -I./src
+
+CFLAGS += -std=gnu99
+CPPFLAGS += -Os -Wall -Werror -ffunction-sections -fdata-sections $(EXTRA_CPPFLAGS)
+# Uncomment for performance profiling
+# CPPFLAGS += -pg
+CXXFLAGS += -std=c++11
+
+.PHONY: prep clean library all install docs release
+
+####################### Compiling library #########################
+
+TARGET_LIB ?= libuprofiler.a
+
+OBJ_LIB += \
+	src/uprofiler.o \
+
+prep:
+ifdef CONFIG_FOR_WINDOWS_BUILD
+	if not exist $(BLD) mkdir $(BLD)
+else
+	mkdir -p $(BLD)
+endif
+
+library: prep $(OBJ_LIB)
+	$(AR) rcs $(BLD)/$(TARGET_LIB) $(OBJ_LIB)
+
+install:
+ifdef CONFIG_FOR_WINDOWS_BUILD
+	if not exist $(DESTDIR)\include mkdir $(DESTDIR)\include &\
+	xcopy src $(DESTDIR)\include /y /s &\
+	for /R $(DESTDIR)\include %%G in (*) do ( if not %%~xG==.h del /F/Q/S %%G )
+else
+	mkdir -p $(DESTDIR)/include $(DESTDIR)/lib
+	cp -r $(BLD)/$(TARGET_LIB) $(DESTDIR)/lib/
+	DST=`realpath $(DESTDIR)` && cd src && find ./ -name \*.h -exec cp --parents {} $${DST}/include/ \; && cd ..
+endif
+
+docs:
+	doxygen doxygen.cfg
+
+all: library
+
+clean:
+ifdef CONFIG_FOR_WINDOWS_BUILD
+	if exist $(BLD) rd $(BLD) /q /s &\
+	for /R .\src\ %%G in (*.o) do ( del /F/Q/S %%G )
+else
+	rm -rf $(BLD)
+	rm -rf $(OBJ_LIB) $(OBJ_LIB:.o=.gcno) $(OBJ_LIB:.o=.gcda) $(OBJ_LIB:.o=.gcov)
+	rm -rf gmon.out
+endif

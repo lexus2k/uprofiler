@@ -1,0 +1,32 @@
+.PHONY: unittest check clean_unittest
+
+CPPUTEST_HOME=/usr/local
+CXXFLAGS += -I$(CPPUTEST_HOME)/include
+
+OBJ_UNIT_TEST = \
+        unittest/main.o \
+        unittest/base_tests.o \
+
+unittest: $(OBJ_UNIT_TEST) library
+	$(CXX) $(CPPFLAGS) -o $(BLD)/unit_test $(OBJ_UNIT_TEST) \
+	     -L$(BLD) -L$(CPPUTEST_HOME)/lib \
+	     -lm -pthread -luprofiler -lCppUTest -lCppUTestExt
+
+check: unittest
+	$(BLD)/unit_test
+
+clean: clean_unittest
+
+clean_unittest:
+	rm -rf $(OBJ_UNIT_TEST) $(OBJ_UNIT_TEST:.o=.gcno) $(OBJ_UNIT_TEST:.o=.gcda) $(OBJ_UNIT_TEST:.o=.*.gcov)
+
+coverage:
+	$(MAKE) ARCH=linux EXTRA_CPPFLAGS="--coverage" check
+	COVERALLS_REPO_TOKEN=TBD coveralls -b . \
+	    --exclude docs --exclude extra --exclude unittest --exclude bld --exclude tools --exclude examples \
+	    --gcov-options '\-lp' --dryrun
+	lcov --base-directory . --directory . -c -o lcov.info
+	lcov --remove lcov.info "*unittest*" -o lcov.info # remove output for external libraries
+	lcov --remove lcov.info "/usr/include*" -o lcov.info # remove output for external libraries
+	# -rm -rf test_coverage
+	# genhtml -o test_coverage -t "uprofiler test coverage" --num-spaces 4 lcov.info

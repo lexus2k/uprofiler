@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <root name="."/>
+    <analyze-all-vs-configs>true</analyze-all-vs-configs>
+    <paths>
+        <dir name="."/>
+    </paths>
+    <libraries>
+        <library>avr</library>
+    </libraries>
+    <suppressions>
+        <suppression>purgedConfiguration</suppression>
+        <suppression>nullPointerArithmeticRedundantCheck</suppression>
+        <suppression>ctuOneDefinitionRuleViolation</suppression>
+    </suppressions>
+</project>
