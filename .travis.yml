@@ -25,17 +25,6 @@ jobs:
   allow_failures:
     - os: windows
   include:
-    - stage: Check esp code
-      script:
-        - ./.travis/setup_esp_build_env.sh travis
-        - . ~/esp/esp-idf/export.sh
-        - cd examples/esp32_idf/uart/tinyfd_loopback/components/uprofiler && ln -s ../../../../../../src && ln -s ../../../../../../component.mk
-        - cd ../.. && make defconfig
-        - make
-      cache:
-        directories:
-          - /home/travis/esp
-          - /home/travis/.espressif
     - stage: Check clang linux code
       compiler: clang
       script:

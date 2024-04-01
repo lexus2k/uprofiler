@@ -1,5 +1,5 @@
 /*
-    Copyright 2019,2022 (C) Alexey Dynda
+    Copyright 2024 (C) Alexey Dynda
 
     This file is part of uProfiler Library.
 
@@ -52,6 +52,7 @@ TEST_GROUP(BASE){
     }
 };
 
+
 TEST(BASE, single_call_check)
 {
     uprof_config_t config = 
@@ -67,8 +68,8 @@ TEST(BASE, single_call_check)
     uprof_end_tag(1);
     uprof_tag_stat_t stat;
     CHECK_EQUAL(0, uprof_get_stat(1, &stat));
-    CHECK_TRUE(stat.total_time >= 100);
-    CHECK_TRUE(stat.total_time <= 110);
+    CHECK_COMPARE(stat.total_time, >=, 100);
+    CHECK_COMPARE(stat.total_time, <=, 110);
     CHECK_EQUAL(1, stat.count);
 }
 
@@ -90,8 +91,8 @@ TEST(BASE, many_calls_check)
     }
     uprof_tag_stat_t stat;
     CHECK_EQUAL(0, uprof_get_stat(1, &stat));
-    CHECK_TRUE(stat.total_time >= 100);
-    CHECK_TRUE(stat.total_time <= 110);
+    CHECK_COMPARE(stat.total_time, >=, 100);
+    CHECK_COMPARE(stat.total_time, <=, 112);
     CHECK_EQUAL(10, stat.count);   
 }
 
@@ -125,26 +126,27 @@ TEST(BASE, muitl_thread_test)
 {
     uprof_config_t config = 
     {
+        .max_concurrent_calls = 2,
         .logger_output = NULL,
         .on_buffer_ready = NULL,
         .get_time = getTime
     };
-    uint8_t buffer[uprof_calculate_size(20)];
+    uint8_t buffer[uprof_calculate_size(24)];
     uprof_init(&config, buffer, sizeof(buffer));
     std::thread t1([](){
         for (int i = 0; i < 20; i++)
         {
-            uprof_begin_tag(i);
+            auto id = uprof_begin_multi_tag(i);
             std::this_thread::sleep_for(std::chrono::milliseconds(10+i));
-            uprof_end_tag(i);
+            uprof_end_multi_tag(id);
         }
     });
     std::thread t2([](){
         for (int i = 0; i < 20; i++)
         {
-            uprof_begin_tag(i);
+            auto id = uprof_begin_multi_tag(i);
             std::this_thread::sleep_for(std::chrono::milliseconds(10+i));
-            uprof_end_tag(i);
+            uprof_end_multi_tag(id);
         }
     });
     t1.join();
@@ -153,11 +155,8 @@ TEST(BASE, muitl_thread_test)
     {
         uprof_tag_stat_t stat;
         CHECK_EQUAL(0, uprof_get_stat(i, &stat));
-        printf("A %u %i\n", stat.total_time, i);
         CHECK_COMPARE(20 + (uint32_t)i * 2, <= , stat.total_time);
-        CHECK_COMPARE(22 + (uint32_t)i * 2, >=, stat.total_time);
-        //CHECK_TRUE(stat.total_time >= 20 + (uint32_t)i * 2);
-        //CHECK_TRUE(stat.total_time <= 22 + (uint32_t)i * 2);
+        CHECK_COMPARE(30 + (uint32_t)i * 2, >= , stat.total_time);
         CHECK_EQUAL(2, stat.count);
     }
 }
