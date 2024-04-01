@@ -2,7 +2,7 @@
 
 <!-- [![Build Status](https://circleci.com/gh/lexus2k/uprofiler.svg?style=svg)](https://circleci.com/gh/lexus2k/uprofiler) -->
 ![Github actions](https://github.com/lexus2k/uprofiler/actions/workflows/main.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/lexus2k/uprofiler/badge.svg?branch=master)](https://coveralls.io/github/lexus2k/uprofiler?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/lexus2k/uprofiler/badge.svg?branch=main)](https://coveralls.io/github/lexus2k/uprofiler?branch=main)
 [![Documentation](https://codedocs.xyz/lexus2k/uprofiler.svg)](https://codedocs.xyz/lexus2k/uprofiler/)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
 ![License](https://img.shields.io/badge/license-Commercial-blue)
