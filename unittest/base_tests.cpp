@@ -96,6 +96,31 @@ TEST(BASE, many_calls_check)
     CHECK_EQUAL(10, stat.count);   
 }
 
+TEST(BASE, single_thread_not_enough_slots)
+{
+    uprof_config_t config = 
+    {
+        .max_concurrent_calls = 0,
+        .logger_output = NULL,
+        .on_buffer_ready = NULL,
+        .get_time = getTime
+    };
+    uint8_t buffer[uprof_calculate_size(1)];
+    uprof_init(&config, buffer, sizeof(buffer));
+    uprof_begin_tag(1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    uprof_end_tag(1);
+    uprof_begin_tag(2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    uprof_end_tag(2);
+    uprof_tag_stat_t stat;
+    CHECK_EQUAL(0, uprof_get_stat(1, &stat));
+    CHECK_COMPARE(stat.total_time, >=, 50);
+    CHECK_COMPARE(stat.total_time, <=, 80);
+    CHECK_EQUAL(1, stat.count);
+    CHECK_EQUAL(-1, uprof_get_stat(2, &stat));
+}
+
 TEST(BASE, many_tags_check)
 {
     uprof_config_t config = 
