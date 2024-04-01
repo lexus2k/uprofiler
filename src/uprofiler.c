@@ -84,7 +84,7 @@ static uint16_t __uprof_find_slot(uint16_t id) {
     return NOT_FOUND;
 }
 
-void uprof_init(uprof_config_t *config, void *buffer, int size)
+void uprof_init(const uprof_config_t *config, void *buffer, int size)
 {
     s_data.config = *config;
     s_data.tags = (uprof_tag_t *)buffer;

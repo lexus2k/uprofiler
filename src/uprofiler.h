@@ -69,7 +69,7 @@ typedef struct {
  * 
  * @return void
  */
-void uprof_init(uprof_config_t *config, void *buffer, int size);
+void uprof_init(const uprof_config_t *config, void *buffer, int size);
 
 /**
  * Calculate the size of the required buffer.
