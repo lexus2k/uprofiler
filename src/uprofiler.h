@@ -33,6 +33,8 @@ extern "C" {
 
 #include <stdint.h>
 
+#define UPROF_CALC_SIZE(num_tags) (4 * sizeof(uint32_t) * num_tags)
+
 /**
  * The configuration of the profiler.
  *
@@ -41,10 +43,10 @@ extern "C" {
  * @param get_time The function to get the current time.
  */
 typedef struct {
-    uint16_t max_concurrent_calls;
     void (*logger_output)(const char *msg);
     void (*on_buffer_ready)(void *buffer, int size);
     uint32_t (*get_time)(void);
+    uint16_t max_concurrent_calls;
 } uprof_config_t;
 
 /**
@@ -126,7 +128,7 @@ void uprof_end_multi_tag(uint16_t id);
  */
 int uprof_get_stat(uint16_t id, uprof_tag_stat_t *stat);
 
-void uprof_flush(void);
+// void uprof_flush(void);
 
 #ifdef __cplusplus
 }

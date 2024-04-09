@@ -31,6 +31,11 @@
 #include "stdint.h"
 #include "string.h"
 
+#if defined(__AVR__)
+#include <util/atomic.h>
+#include <Arduino.h>
+#endif
+
 #define NOT_FOUND 0xFFFF
 #define EMPTY_SLOT 0
 
@@ -54,17 +59,79 @@ typedef struct {
 
 static uprof_t s_data = {{0, 0, 0}, NULL, 0};
 
+#if defined(__AVR__)
+// && defined(ATOMIC_BLOCK)
+
+uint8_t static inline __avr_atomic_compare_exchange(uint16_t *p, uint16_t *c, uint16_t n)
+{
+    uint8_t f = 0;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        if (*c == *p)
+        {
+            *c = *p;
+            *p = n;
+            f = 1;
+        }
+    }
+    return f;
+}
+
+uint16_t static inline __avr_atomic_load(uint16_t *p)
+{
+    uint16_t v = 0;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        v = *p;
+    }
+    return v;
+}
+
+void static inline __avr_atomic_store(uint16_t *p, uint16_t v)
+{
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        *p = v;
+    }
+}
+
+uint32_t static inline __avr_atomic_fetch_add(uint32_t *p, uint32_t v)
+{
+    uint32_t n;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+    {
+        n = *p;
+        *p += v;
+    }
+    return n;
+}
+
+#define uprof_atomic_compare_exchange_n(p, c, n) __avr_atomic_compare_exchange(p, c, n)
+#define uprof_atomic_load_n(p) __avr_atomic_load(p)
+#define uprof_atomic_store_n(p,v) __avr_atomic_store(p,v)
+#define uprof_atomic_fetch_add(p,v) __avr_atomic_fetch_add(p,v)
+
+#else
+
+#define uprof_atomic_compare_exchange_n(p, c, n)  __atomic_compare_exchange_n(p, c, n, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED)
+#define uprof_atomic_load_n(p) __atomic_load_n(p, __ATOMIC_RELAXED)
+#define uprof_atomic_store_n(p,v) __atomic_store_n(p, v, __ATOMIC_RELAXED)
+#define uprof_atomic_fetch_add(p,v) __atomic_fetch_add(p, v, __ATOMIC_RELAXED)
+
+#endif
+
+
 static uint16_t __uprof_find_slot_and_acquire(uint16_t id)
 {
     uint16_t start_index = id % s_data.tag_count;
     uint16_t index = start_index;
     do {
         uint16_t s_empty = EMPTY_SLOT;
-        uint8_t success = __atomic_compare_exchange_n(&s_data.tags[index].id, &s_empty, id + 1, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+        uint8_t success = uprof_atomic_compare_exchange_n(&s_data.tags[index].id, &s_empty, id + 1);
         if (success) {
             // new slot is found, counter must be zero at this point
             return index;
-        } else if ( __atomic_load_n(&s_data.tags[index].id, __ATOMIC_RELAXED) == id + 1) {
+        } else if ( uprof_atomic_load_n(&s_data.tags[index].id) == id + 1) {
             return index;
         }
         index = (index + 1) % s_data.tag_count;
@@ -76,7 +143,7 @@ static uint16_t __uprof_find_slot(uint16_t id) {
     uint16_t start_index = id % s_data.tag_count;
     uint16_t index = start_index;
     do {
-        if (__atomic_load_n(&s_data.tags[index].id, __ATOMIC_RELAXED) == id + 1) {
+        if (uprof_atomic_load_n(&s_data.tags[index].id) == id + 1) {
             return index;
         }
         index = (index + 1) % s_data.tag_count;
@@ -137,7 +204,7 @@ static uint16_t __uprof_find_slot_and_acquire_multi(uint16_t id)
     do {
         uint16_t s_empty = EMPTY_SLOT;
         // Find any empty slot
-        uint8_t success = __atomic_compare_exchange_n(&s_data.tags[index].id, &s_empty, NOT_FOUND, 0, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+        uint8_t success = uprof_atomic_compare_exchange_n(&s_data.tags[index].id, &s_empty, NOT_FOUND);
         if (success) {
             s_data.tags[index].real_id = id;
             return index;
@@ -169,12 +236,12 @@ void uprof_end_multi_tag(uint16_t id)
     uint16_t real_id = s_data.tags[id].real_id;
     uint16_t stat_slot = __uprof_find_slot_and_acquire(real_id);
     if (stat_slot != NOT_FOUND) {
-        __atomic_fetch_add(&s_data.tags[stat_slot].total_duration, s_data.config.get_time() - s_data.tags[id].start_timestamp, __ATOMIC_RELAXED);
-        __atomic_fetch_add(&s_data.tags[stat_slot].count, 1, __ATOMIC_RELAXED);
+        uprof_atomic_fetch_add(&s_data.tags[stat_slot].total_duration, s_data.config.get_time() - s_data.tags[id].start_timestamp);
+        uprof_atomic_fetch_add(&s_data.tags[stat_slot].count, 1);
     }
 
     memset(&s_data.tags[id].start_timestamp, 0, sizeof(uprof_tag_t) - offsetof(uprof_tag_t, start_timestamp));
-    __atomic_store_n(&s_data.tags[id].id, EMPTY_SLOT, __ATOMIC_RELAXED);
+    uprof_atomic_store_n(&s_data.tags[id].id, EMPTY_SLOT);
 }
 
 int uprof_get_stat(uint16_t id, uprof_tag_stat_t *stat)

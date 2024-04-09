@@ -100,10 +100,10 @@ TEST(BASE, single_thread_not_enough_slots)
 {
     uprof_config_t config = 
     {
-        .max_concurrent_calls = 0,
         .logger_output = NULL,
         .on_buffer_ready = NULL,
-        .get_time = getTime
+        .get_time = getTime,
+        .max_concurrent_calls = 0
     };
     uint8_t buffer[uprof_calculate_size(1)];
     uprof_init(&config, buffer, sizeof(buffer));
@@ -151,10 +151,10 @@ TEST(BASE, muitl_thread_test)
 {
     uprof_config_t config = 
     {
-        .max_concurrent_calls = 2,
         .logger_output = NULL,
         .on_buffer_ready = NULL,
-        .get_time = getTime
+        .get_time = getTime,
+        .max_concurrent_calls = 2,
     };
     uint8_t buffer[uprof_calculate_size(24)];
     uprof_init(&config, buffer, sizeof(buffer));
@@ -185,3 +185,25 @@ TEST(BASE, muitl_thread_test)
         CHECK_EQUAL(2, stat.count);
     }
 }
+
+#if 0
+#define UPROF_TAG_ID   __func__ ## tag_id
+
+#define UPROF_FUNC_ID  &UPROF_TAG_ID
+
+TEST(BASE, macro_test)
+{
+    uprof_config_t config = 
+    {
+        .max_concurrent_calls = 1,
+        .logger_output = NULL,
+        .on_buffer_ready = NULL,
+        .get_time = getTime
+    };
+    uint8_t buffer[uprof_calculate_size(3)];
+    uprof_init(&config, buffer, sizeof(buffer));
+    uint16_t UPROF_TAG_ID = uprof_begin_multi_tag(UPROF_FUNC_ID);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    uprof_end_multi_tag(UPROF_TAG_ID);
+}
+#endif
