@@ -31,7 +31,7 @@
 #include "stdint.h"
 #include "string.h"
 
-#if defined(__AVR__)
+#if defined(__AVR__) && defined(ARDUINO)
 #include <util/atomic.h>
 #include <Arduino.h>
 #endif
@@ -59,7 +59,7 @@ typedef struct {
 
 static uprof_t s_data = {{0, 0, 0}, NULL, 0};
 
-#if defined(__AVR__)
+#if defined(__AVR__) && defined(ARDUINO)
 // && defined(ATOMIC_BLOCK)
 
 uint8_t static inline __avr_atomic_compare_exchange(uint16_t *p, uint16_t *c, uint16_t n)
