@@ -77,7 +77,7 @@ uint8_t static inline __avr_atomic_compare_exchange(uint16_t *p, uint16_t *c, ui
     return f;
 }
 
-uint16_t static inline __avr_atomic_load(uint16_t *p)
+uint16_t static inline __avr_atomic_load(const uint16_t *p)
 {
     uint16_t v = 0;
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
