@@ -127,7 +127,7 @@ If you find the library useful and want to [support future development](https://
 
 | Paypal | Bitcoin | Etherium |
 | ------ | ------- | -------- |
-| Not available  |  <center>![BTC](.travis/btc_segwit.png)<br/>[3CtUY6Ag2zsvm1JyqeeKeK8kjdG7Tnjr5W](bitcoin:3CtUY6Ag2zsvm1JyqeeKeK8kjdG7Tnjr5W)</center> | <center>![ETH](.travis/eth.png)<br/>[0x20608A71470Bc84a3232621819f578Fb9C02A460](etherium:0x20608A71470Bc84a3232621819f578Fb9C02A460)</center> |
+|   |  <center>![BTC](.travis/btc_segwit.png)<br/>[3CtUY6Ag2zsvm1JyqeeKeK8kjdG7Tnjr5W](bitcoin:3CtUY6Ag2zsvm1JyqeeKeK8kjdG7Tnjr5W)</center> | <center>![ETH](.travis/eth.png)<br/>[0x20608A71470Bc84a3232621819f578Fb9C02A460](etherium:0x20608A71470Bc84a3232621819f578Fb9C02A460)</center> |
 
 ## License
 
